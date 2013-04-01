@@ -29,7 +29,9 @@ public class ServerScript {
         ScriptEngine engine = manager.getEngineByName("JavaScript");
         StringWriter scriptwriter = new StringWriter();
         //give it post arguments
-        engine.put("POST", postargs);
+        if(postargs != null) {
+            engine.put("POST", postargs);
+        }
         
         //give it something to write to
         engine.put("page", scriptwriter);

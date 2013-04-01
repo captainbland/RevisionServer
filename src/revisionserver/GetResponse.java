@@ -14,22 +14,22 @@ import java.util.*;
  */
 public class GetResponse {
 
-    private String filepath = "";
-    private byte[] filecontents = new byte[1];
-    private String hostname = "";
-    private int contentlength = 0;
-    private String status = "200 OK";
-    private String contenttype = "text/html";
-    private String contentencoding = "";
-    private String location = "";
-
+    protected String filepath = "";
+    protected byte[] filecontents = new byte[1];
+    protected String hostname = "";
+    protected int contentlength = 0;
+    protected String status = "200 OK";
+    protected String contenttype = "text/html";
+    protected String contentencoding = "";
+    protected String location = "";
+    protected HashMap<String, String> postargs = new HashMap();
     /**
      * Gets the file from the relative path
      *
      * @param path
      * @return
      */
-    public static Content loadFile(String path) throws Exception {
+    public Content loadFile(String path) throws Exception {
         byte[] contents = "".getBytes();
         String encoding = "UTF-8";
         Content content = new Content("Test!");
@@ -71,7 +71,7 @@ public class GetResponse {
         } else if (ext[1].equals("js")) {
             //oh god this is such a mess. whatever
             ServerScript script = new ServerScript(path);
-            contents = script.invoke(null).getBytes();
+            contents = script.invoke(postargs).getBytes();
         } else {
             FileReader file = null;
             try {
@@ -106,11 +106,12 @@ public class GetResponse {
      * @param lines
      * @return
      */
-    public static GetResponse newFromClientRequest(String[] lines) {
+    public static GetResponse newFromClientRequest(String[] lines, HashMap<String, String> postargs) {
         //first line:
         String path = "";
-
+        
         GetResponse get = new GetResponse();
+        get.setPostArgs(postargs);
         Content tcontent = new Content("");
         if (lines.length > 0) {
             String[] firstline = lines[0].split(" ");
@@ -118,7 +119,7 @@ public class GetResponse {
             byte[] filecontents = new byte[1024 * 8];
 
             try {
-                tcontent = loadFile(filepath);
+                tcontent = get.loadFile(filepath);
                 filecontents = tcontent.getContent();
                 get.setFilecontents(filecontents);
                 get.setContenttype(tcontent.getType());
@@ -132,6 +133,7 @@ public class GetResponse {
                     get.setStatus("301 Moved Permanently");
                     get.setLocation("index.html");
                 } else {
+                    
                     e.printStackTrace();
                     System.err.println(e.getMessage());
                 }
@@ -156,7 +158,7 @@ public class GetResponse {
     public byte[] getResponse() {
         //create the header
         String header =
-                "HTTP/1.1 " + status + "\n"
+                "HTTP/1.0 " + status + "\n"
                 + //"Date: " + (new SimpleDateFormat()).format(new Date()) + "\n" +
                 "Connection: close\n"
                 + "Server: Jaron's shitty revision server\n"
@@ -239,5 +241,9 @@ public class GetResponse {
 
     public void setLocation(String location) {
         this.location = location;
+    }
+    
+    public void setPostArgs(HashMap<String, String> postargs) {
+        this.postargs = postargs;
     }
 }

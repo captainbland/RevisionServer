@@ -22,7 +22,7 @@ public class Connection implements Runnable {
         while(!skt.isClosed()) {
             try {
                  //handle requests...
-                byte[] buffer = new byte[1024*8]; 
+                byte[] buffer = new byte[1024*1024]; 
                 int buffersize = skt.getInputStream().read(buffer);
                 
                 String response = new String(buffer, "UTF-8");
